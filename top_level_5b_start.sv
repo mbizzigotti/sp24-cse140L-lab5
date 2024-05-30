@@ -9,7 +9,13 @@ module top_level_5b(
   logic    [7:0] raddr, 
                  waddr,
                  data_in,
-                 data_out;             
+                 data_out;
+
+  logic [7:0] wr_ct;
+  logic [7:0] next_wr_ct;
+
+  logic end_pre;
+  logic last_end_pre;
 
 // program counter
   logic[15:0] cycle_ct = 0;
@@ -79,19 +85,27 @@ per clock cycle.
     if(init) begin
       cycle_ct <= 'b0;
       match    <= 'b0;
+      last_end_pre <= 'b0;
     end
     else begin
       cycle_ct <= cycle_ct + 1;
+      last_end_pre <= end_pre;
 	    if (cycle_ct == 8) begin // last symbol of preamble
 	      for(i=0; i<6; i++) begin
 	        match[i] <= (LFSR_state[i] == ('h1f ^ data_out[5:0])); // which LFSR state conforms to our test bench LFSR? 
 		    end
       end
     end
-  end  
+  end
+
+  always @(posedge clk) begin
+    wr_ct <= next_wr_ct;
+  end
 
   always_comb begin 
 //defaults
+    end_pre = last_end_pre;
+    next_wr_ct = wr_ct;
     load_LFSR = 'b0; 
     LFSR_en   = 'b0;   
 	  wr_en     = 'b0;
@@ -114,27 +128,28 @@ per clock cycle.
 	    LFSR_en = 1;
 		  raddr = 'd65;			  // advance raddr
 		  waddr = 'd64;
+      next_wr_ct = '0;
 		end
-	72  : begin
-        done = 1;		// send acknowledge back to test bench to halt simulation
- 		    raddr =	0;
- 		    waddr = 'd64; 
-	     end
 	default: begin	         // covers cycle_ct 4-71
 	  LFSR_en = 1;
-	  waddr = cycle_ct - 9;
-    //raddr++;
+	  waddr = wr_ct;
+    raddr = 62 + cycle_ct;
+		data_in = data_out^{2'b00, LFSR_state[foundit]};
     if(cycle_ct>8) begin   // turn on write enable
-			wr_en = 1;
-      raddr = 62 + cycle_ct;
+      if (!last_end_pre && data_in == 'h5F) begin
+        // skip
+      end else begin
+			  wr_en = 1;
+        next_wr_ct = wr_ct + 1;
+        end_pre = 1;
+      end
 		end
 		else begin
-      raddr = 'd70;
 			wr_en = 0;
 		end
-		data_in = data_out^{2'b00, LFSR_state[foundit]};
   end
   endcase
+  done = (raddr > 125);
 end
 
 /*
