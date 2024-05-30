@@ -5,7 +5,7 @@
 // Test bench first runs lab 4 equivalent to create an encrypted message
 // Restrict lengh of _ preamble
 // Change: delete leading _ from message as well as in preamble proper
-module Lab_5b_tb                ;
+module Lab_5c_tb                ;
   logic       clk               ;		   // advances simulation step-by-step
   logic       init              ;          // init (reset, start) command to DUT
   logic       wr_en             ;          // DUT memory core write enable
@@ -46,9 +46,9 @@ module Lab_5b_tb                ;
     wr_en = 'b0;
 //    static integer fi = $fopen("original_msg.txt","r");
 //    $fgets(str2, fi);	   //  'b01______
-//    str2 = "Mr_Watson_come_here_I_want_to_see_you";//_my_aide";
+    str2 = "Mr_Watson_come_here_I_want_to_see_you";//_my_aide";
 //      str2 = "@`@@``@@@```@@@@````@@@@@`````@@@@@@``````";
-      str2 = "@@@@@@@@@@``````````@@@@@@@@@@``````````@@@@@@@@@@";
+//      str2 = "@@@@@@@@@@``````````@@@@@@@@@@``````````@@@@@@@@@@";
 //        str2 = "______________________________________________";
     str_len = str2.len     ;
     if(str_len>50) 
@@ -64,7 +64,7 @@ module Lab_5b_tb                ;
     LFSR_ptrn[5] = 6'h39;
 // set preamble lengths for the program runs (always > 6)
 // ***** choose any value > 6 *****
-    pre_length                    = 7;    // values 7 to 12 enforced by test bench
+    pre_length                    = 10;    // values 7 to 12 enforced by test bench
     if(pre_length < 7) begin
       $display("illegally short preamble length chosen, overriding with 7");
       pre_length =  7;
@@ -77,7 +77,7 @@ module Lab_5b_tb                ;
       $display("preamble length = %d",pre_length);
 // select LFSR tap pattern
 // ***** choose any value < 6 *****
-    pat_sel                       =  2;
+    pat_sel                       =  4;
     if(pat_sel > 5) begin 
       $display("illegal pattern select chosen, overriding with 3");
       pat_sel = 3;                         // overrides illegal selections
@@ -86,7 +86,7 @@ module Lab_5b_tb                ;
       $display("tap pattern %d selected",pat_sel);
 // set starting LFSR state for program -- 
 // ***** choose any 6-bit nonzero value *****
-    LFSR_init = 6'h01;                     // for program 2 run
+    LFSR_init = 6'h21;                     // for program 2 run
     if(!LFSR_init) begin
       $display("illegal zero LFSR start pattern chosen, overriding with 6'h01");
       LFSR_init = 6'h01;                   // override 0 with a legal (nonzero) value

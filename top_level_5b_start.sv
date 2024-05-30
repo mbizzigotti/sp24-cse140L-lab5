@@ -51,7 +51,7 @@ const bit [5:0] tap_patterns[6] = '{
 
 genvar k;
 generate
-  for (k=0; k < 6; k++)
+  for (k=0; k < 6; k++) begin :shift_registers
   lfsr6b lfsr (
     .clk,
     .en(LFSR_en),
@@ -60,6 +60,7 @@ generate
     .start(data_out[5:0] ^ 6'h1f),
     .state(LFSR_state[k])
   );
+  end
 endgenerate
 
 
@@ -109,6 +110,7 @@ per clock cycle.
     load_LFSR = 'b0; 
     LFSR_en   = 'b0;   
 	  wr_en     = 'b0;
+	  data_in = 'b0;
   case(cycle_ct)
 	0: begin 
     raddr     = 'd64;   // starting address for encrypted data to be loaded into device
